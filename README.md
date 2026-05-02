@@ -1,33 +1,15 @@
-# sinksmtp - SMTPD2dir
+# sinksmtp 0.2.0
 
-* Copyright: GPLv3
 * Repo: github.com/pepa65/sinksmtp
+* License: GPLv3
 * After: github.com/Siebenmann/sinksmtp
+* More extensive documentation: DOC.md
 
-Sinksmtp is a 'sink' SMTP server, one that talks SMTP and potentially
-captures incoming email, but doesn't do anything with any email it
-captures except log it to disk.  The author uses it to capture incoming
-spam to what are now spamtrap addresses.
+Sinksmtp is a SMTP server that talks SMTP and potentially captures incoming
+email, but doesn't do anything with any email it captures except log it to
+disk and perhaps save it, where it's up to you to monitor it and pull it out.
+It supports TLS if configured and a number of ways to filter and select a
+response in the interactions, logging and saving.
 
-Sinksmtp supports TLS if configured, among other things.
-
-Sinksmtp supports a number of ways to filter and select what incoming
-SMTP transactions can get as far as submitting messages and which ones
-are refused earlier. The author uses this to filter out uninteresting
-spam and spam sources in his spamtrap server.
-
-Sinksmtp uses github.com/pepa65/smtpd Go package to handle the low level details
-of SMTP serving. It was previously part of the source repo for that
-package, as a usage example, but it has considerably outgrown being a
-simple usage example and has now moved into a separate repo.
-
-There are some fancier packages that may be better alternatives to
-sinksmtp for things like accepting email for testing or as a logging
-mechanism for systems that don't have anything else.  The ones that I
-know of are:
-* https://github.com/mailhog/MailHog
-* http://mailslurper.com/
-
-A feature for both of these is a web interface that let you see and
-browse the received email messages. Sinksmtp just dumps any email into
-the filesystem, where it's up to you to monitor it and pull it out.
+Sinksmtp uses the github.com/pepa65/smtpd Go package to handle the low level
+details of SMTP serving (it used to be part of it as an example).

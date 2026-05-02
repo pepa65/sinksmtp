@@ -26,7 +26,9 @@ import (
 	"github.com/pepa65/smtpd"
 )
 
-var stats = expvar.NewMap("sinksmtp")
+const version = "0.2.0"
+const self = "sinksmtp"
+var stats = expvar.NewMap(self)
 var times expvar.Map
 var iptimes expvar.Map
 var manyIps bool
@@ -43,10 +45,10 @@ var events struct {
 }
 
 // TimeNZ is our message/logging time format; it's time without the timezone.
-const TimeNZ = "2006-01-02 15:04:05"
+const TimeNZ = "2006-01-02_15:04:05"
 
 func warnf(format string, elems ...interface{}) {
-	fmt.Fprintf(os.Stderr, "sinksmtp: "+format, elems...)
+	fmt.Fprintf(os.Stderr, self + ": " + format, elems...)
 }
 
 func die(format string, elems ...interface{}) {
@@ -73,7 +75,7 @@ func warnbackend() {
 		nmsg := <-uniquer
 		if nmsg != lastmsg {
 			if nmsg != "" {
-				fmt.Fprintf(os.Stderr, "sinksmtp: %s", nmsg)
+				fmt.Fprintf(os.Stderr, "%s: %s", self, nmsg)
 			}
 			lastmsg = nmsg
 		}
@@ -604,13 +606,13 @@ func logMessage(prefix string, trans *smtpTransaction, logf io.Writer) {
 	for _, a := range trans.rcptto {
 		fmt.Fprintf(writer, " <%s>", a)
 	}
-	fmt.Fprintf(writer, " %d bytes msg-hash: %s body-hash: %s at: %v by: %s",
+	fmt.Fprintf(writer, " %d bytes msg-hash:%s body-hash:%s at %v by %s",
 		len(trans.data), trans.hash, trans.bodyhash, trans.laddr, trans.heloname)
 	if trans.tlson {
-		fmt.Fprintf(writer, " tls:cipher: 0x%04x tls:proto: 0x%04x", trans.cipher, trans.tlsversion)
+		fmt.Fprintf(writer, " tls.cipher:0x%04x tls.proto:0x%04x", trans.cipher, trans.tlsversion)
 	}
 	if trans.filename != "" {
-		fmt.Fprintf(writer, " to: %s", trans.filename)
+		fmt.Fprintf(writer, " into: %s", trans.filename)
 	}
 	fmt.Println("")
 	writer.Flush()
@@ -1482,43 +1484,27 @@ func updateTimeOf(what, laddr string) {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "\t%s [options] [host]:port [[host]:port ...]\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "\nOptions:\n")
+	fmt.Fprintf(os.Stderr, "%s v%s - SMTP2dir\n", self, version)
+	fmt.Fprintf(os.Stderr, "Usage:  %s [options] [host]:port...\n", self)
+	fmt.Fprintf(os.Stderr, "Options:\n")
 	flag.PrintDefaults()
 	fmt.Fprint(os.Stderr, noteStr)
 }
 
 var noteStr = `
-See the manual for more comprehensive documentation.
-(Well, godoc output. cmd/doc.go in the source.)
-
-Quick notes:
--helo's default value is either the hostname of the IP of the local
-IP for the connection or 'IP:port' if the IP has no hostname.
-
--c/-k can be given a comma-separated list of certificate and key
-files; sinksmtp uses standard Go SNI matching to pick which one to
-offer (defaulting to the first).
-
-The rejection from -M is applied after -d and/or -l, so a received
-email will be saved and/or have its details logged before being
-5xx'd to the client.
-
--save-hash's options are 'all' (all available information, almost
-always unique names), 'full' (message plus most envelope metadata),
-or 'msg' (actual received message only). Using 'msg' requires -l.
-Setting -save-hash is meaningless without -d.
-
-An empty or missing -fromreject, -heloreject, and/or -toaccept file
-behaves as if the option hadn't been set. Files are checked and
-reloaded for each new connection and thus can be changed on the fly.
-If -toaccept is active, addresses that do not match something in
-the file are rejected.
-
-Control rule files are reloaded for each new connection. Any errors
-in this process cause the connection to defer all commands with a
-421 response (because sinksmtp can't safely do anything else).
+See DOC.md at github.com/pepa65/sinksmtp for more comprehensive documentation.
+* Default of '-helo' is either the hostname if set or 'IP:port'
+* Flags '-c'/'-k' take a comma-separated list of certificate and key files
+* Rejection from '-M' (send 5xx to client) happens after '-d' and '-l'
+* Options for '-save-hash':
+  - 'all': All available information, almost always unique names
+  - 'full': Message plus most envelope metadata
+  - 'msg': Actual received message only (requires '-l')
+* Setting '-save-hash' is meaningless without '-d'
+* Empty/missing file after '-fromreject'/'-heloreject'/'-toaccept' is ignored
+* At each new connection used files are read from disk (changeable on the fly)
+* Errors in Control Rule files make all connections to defer and respond 421
+* If '-toaccept FILE' is active, unmatched addresses in the FILE are rejected
 `
 
 func main() {
@@ -1550,15 +1536,21 @@ func main() {
 	flag.BoolVar(&nostdrules, "nostdrules", false, "do not use standard basic rules")
 	flag.StringVar(&pprofserv, "pprof", "", "`host:port` for net/http/pprof performance monitoring server")
 	flag.StringVar(&connfile, "conncfg", "", "`file` of per-connection parameters")
-	// TODO: this is badly described.
 	flag.BoolVar(&forcemany, "statsperip", false, "keep additional per-local-address connection stats")
+	flag.Bool("vers", false, "Show version")
+	showVersion := flag.Bool("V", false, "Print version and exit")
 
 	flag.Usage = usage
 
 	flag.Parse()
+	if *showVersion {
+		fmt.Println(self + " v" + version)
+		return
+	}
+
 	if flag.NArg() == 0 {
-		fmt.Fprintf(os.Stderr, "%s: no arguments given about what to listen on\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "usage: %s [options] [host]:port [[host]:port ...]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "%s: no arguments given about what to listen on\n", self)
+		fmt.Fprintf(os.Stderr, "Usage:  %s [options] [host]:port...\n", self)
 		return
 	}
 	// This is theoretically too pessimistic in the face of a rules file,
