@@ -1,2 +1,2 @@
-github.com/siebenmann/smtpd v0.0.0-20241018230429-b82465ad86c3 h1:F0vecRDySib8IicOTp03Wl87NkOzwQ5weEEgxWA73gU=
-github.com/siebenmann/smtpd v0.0.0-20241018230429-b82465ad86c3/go.mod h1:/kb5Km1WKWYLl2+z9xmw/tHIJPNsfsnr/z2BPxZ329Q=
+github.com/pepa65/smtpd v0.0.0-20260501111044-5622ab8b21fa h1:Fue5/pDhtJtksV3VQKsRRSuQeh1pcsw3oLg4FBaIwwU=
+github.com/pepa65/smtpd v0.0.0-20260501111044-5622ab8b21fa/go.mod h1:SGSJHmgc+Cz6j7VCtnRzu3CZucnvZn+a9fv9zP/UFzU=

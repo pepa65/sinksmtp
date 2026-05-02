@@ -10,7 +10,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/siebenmann/smtpd"
+	"github.com/pepa65/smtpd"
 )
 
 // DNSResult encapsulates the DNS result and any error. This is a hack.

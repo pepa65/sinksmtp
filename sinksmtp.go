@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/siebenmann/smtpd"
+	"github.com/pepa65/smtpd"
 )
 
 var stats = expvar.NewMap("sinksmtp")
@@ -397,21 +397,18 @@ type smtpTransaction struct {
 	rip          string
 	lip          string
 	rdns         *rDNSResults
-
 	// these tracking fields are valid only after the relevant
 	// phase/command has been accepted, ie they have the *accepted*
 	// EHLO name, MAIL FROM, etc.
 	heloname string
 	from     string
 	rcptto   []string
-
 	data     string
 	hash     string    // canonical hash of the data, currently SHA1
 	bodyhash string    // canonical hash of the message body (no headers)
 	when     time.Time // when the email message data was received.
-
-	savedir string // directory to save message to
-
+	savedir  string // directory to save message to
+	filename string
 	// Reflects the current state, so tlson false can convert to
 	// tlson true over time. cipher is valid only if tlson is true.
 	// servername is the SNI we were given, while peername is the
@@ -423,12 +420,10 @@ type smtpTransaction struct {
 	servername  string
 	peername    string
 	tlsverified bool
-
 	// Make our logger accessible in decider() as a hack.
-	log      *smtpLogger
-	lastmsg  string
-	lastamsg string
-
+	log         *smtpLogger
+	lastmsg     string
+	lastamsg    string
 	lastresgood bool // last result from decider()
 }
 
@@ -603,20 +598,22 @@ func logMessage(prefix string, trans *smtpTransaction, logf io.Writer) {
 	}
 	var outbuf bytes.Buffer
 	writer := bufio.NewWriter(&outbuf)
-	fmt.Fprintf(writer, "%s [%s] from %v / ",
+	fmt.Fprintf(writer, "%s [%s] from %v ",
 		trans.when.Format(TimeNZ), prefix,
 		trans.raddr)
 	fmt.Fprintf(writer, "<%s> to", trans.from)
 	for _, a := range trans.rcptto {
 		fmt.Fprintf(writer, " <%s>", a)
 	}
-	fmt.Fprintf(writer, ": message %d bytes hash %s body %s | local %v helo '%s'",
-		len(trans.data), trans.hash, trans.bodyhash, trans.laddr,
-		trans.heloname)
+	fmt.Fprintf(writer, " %d bytes msg-hash: %s body-hash: %s at: %v by: %s",
+		len(trans.data), trans.hash, trans.bodyhash, trans.laddr, trans.heloname)
 	if trans.tlson {
-		fmt.Fprintf(writer, " tls:cipher 0x%04x tls:proto 0x%04x", trans.cipher, trans.tlsversion)
+		fmt.Fprintf(writer, " tls:cipher: 0x%04x tls:proto: 0x%04x", trans.cipher, trans.tlsversion)
 	}
-	fmt.Fprintf(writer, "\n")
+	if trans.filename != "" {
+		fmt.Fprintf(writer, " to: %s", trans.filename)
+	}
+	fmt.Println("")
 	writer.Flush()
 	logf.Write(outbuf.Bytes())
 }
@@ -625,8 +622,8 @@ func logMessage(prefix string, trans *smtpTransaction, logf io.Writer) {
 // Here we log the message reception and possibly save it.
 func handleMessage(prefix string, trans *smtpTransaction, logf io.Writer) (string, error) {
 	var hash string
-	logMessage(prefix, trans, logf)
 	if trans.savedir == "" {
+		logMessage(prefix, trans, logf)
 		return trans.hash, nil
 	}
 	m, mhash := msgDetails(prefix, trans)
@@ -657,11 +654,11 @@ func handleMessage(prefix string, trans *smtpTransaction, logf io.Writer) (strin
 	default:
 		panic(fmt.Sprintf("unhandled hashtype '%s'", hashtype))
 	}
-
-	tgt := trans.savedir + "/" + hash
+	trans.filename = trans.savedir + "/" + hash
+	logMessage(prefix, trans, logf)
 	// O_CREATE|O_EXCL will fail if the file already exists, which
 	// is okay with us.
-	fp, err := os.OpenFile(tgt, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	fp, err := os.OpenFile(trans.filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err == nil {
 		_, err = fp.Write(m)
 		if err != nil {
@@ -831,11 +828,11 @@ func decider(ph Phase, evt smtpd.EventInfo, c *Context, convo *smtpd.Conn, id st
 		// Default messages are kind of intricate.
 		switch {
 		case id != "" && ph == pMessage:
-			convo.RejectMsg("We do not consent to you emailing %s\nRejected with ID %s", pluralRecips(c), id)
+			convo.RejectMsg("Barred from emailing %s\nRejected with ID %s", pluralRecips(c), id)
 		case ph == pMessage || ph == pData:
-			convo.RejectMsg("We do not consent to you emailing %s", pluralRecips(c))
+			convo.RejectMsg("Barred from emailing %s", pluralRecips(c))
 		case ph == pRto:
-			convo.RejectMsg("We do not consent to you emailing that address")
+			convo.RejectMsg("Barred from emailing that address")
 		default:
 			convo.Reject()
 		}
@@ -967,8 +964,8 @@ func process(cid int, nc net.Conn, certs []tls.Certificate, logf io.Writer, smtp
 
 	cfg.LocalName = sname
 	cfg.SayTime = true
-	cfg.SftName = "sinksmtp"
-	cfg.Announce = "This server does not deliver email."
+	cfg.SftName = "smtpd"
+	cfg.Announce = "We deliver, please send"
 
 	// stalled conversations are always slow, even if -S is not set.
 	// TODO: make them even slower than this? I probably don't care.
@@ -1149,6 +1146,7 @@ func process(cid int, nc net.Conn, certs []tls.Certificate, logf io.Writer, smtp
 			}
 			trans.hash, trans.bodyhash = getHashes(trans)
 			transid, err := handleMessage(prefix, trans, logf)
+			trans.filename = transid
 			// errors when handling a message always force
 			// a tempfail regardless of how we're
 			// configured.

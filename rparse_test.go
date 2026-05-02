@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/siebenmann/smtpd"
+	"github.com/pepa65/smtpd"
 )
 
 // all of these rules should parse

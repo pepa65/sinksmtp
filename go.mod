@@ -1,5 +1,5 @@
-module github.com/siebenmann/sinksmtp
+module github.com/pepa65/sinksmtp
 
-go 1.17
+go 1.25.5
 
-require github.com/siebenmann/smtpd v0.0.0-20241018230429-b82465ad86c3
+require github.com/pepa65/smtpd v0.0.0-20260501111044-5622ab8b21fa
