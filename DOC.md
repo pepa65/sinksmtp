@@ -15,22 +15,19 @@ it down.
   IP of the connection, then just use the local 'IP:port'
   (which always exists). If DNS returns multiple names,
   we use the first.
-*	`-S` (Slow): send all server replies out to the network at a rate
+* `-S` (Slow): send all server replies out to the network at a rate
   of one character every tenth of a second.
-* `-c TLSCERIFICATEPATH`
-* `-k TLSKEYPATH`
-	Provide TLS certificate and private key to enable TLS.
-  Both files must be PEM encoded. Self-signed is fine
-  (in fact you probably should use only self-signed
-  certificates with sinksmtp; see the TLS section).
-  You must give both options (or neither).
+* `-C CERTFILE[,...]`, `-K KEYFILE[,...]`: Provide TLS certificate and private
+  key to enable TLS. Both files must be PEM encoded. Self-signed is fine
+  (in fact you probably should use only self-signed certificates with
+  sinksmtp; see the TLS section). You must give both options (or neither).
   You can use multiple certificates and keys by chaining them by `,`,
-  like: '-c c1.crt,c2.crt -k k1.key,k2.key'.
+  like: '-C c1.crt,c2.crt -K k1.key,k2.key'.
   If there are multiple certificates given, Go TLS will use
   SNI to pick an appropriate one if possible.
-* `-conncfg FILE`: This file can be used to specify the -helo and -c/-k
-  settings for new connections based on the local IP address
-  that the connection is to. See CONNECTION PARAMETERS further down.
+* `-c FILE`: Configfile to specify the -helo and -C/-K settings for new
+  connections based on the local IP address that the connection is to.
+  See CONNECTION PARAMETERS further down.
 * `-l FILE`: Log one line per fully received message to this file.
   May be `-` for standard output.
 * `-smtplog FILE`: Log SMTP commands received and server output (and some
@@ -58,7 +55,7 @@ it down.
 * `-dncount NUM`: Start stalling a do-nothing client after this many
   connections in which it did not even EHLO successfully. Stalled clients get
   4xx responses to everything and their SMTP sessions aren't logged. Only does
-  something	with `-smtplog`.
+  something with `-smtplog`.
 * `-dndur DUR`: Both how long we stall a do-nothing client for before giving
   it a second chance and the time window over which we count do-nothing
   sessions.
@@ -167,15 +164,15 @@ for them. There are three possible hash names and 'all' is the default:
 In simple setups, fixed command line arguments are good enough for
 connections. However if you have multiple IP addresses on a machine that
 are associated with different hosts, you may need to present different
-greetings and TLS keys in response to different connections. The `-conncfg`
-flag allows you to specify a control file for this purpose. The format of the
+greetings and TLS keys in response to different connections. The `-c` flag
+allows you to specify a configfile for this purpose. The format of the
 file is 1 or more: `LOCAL [hostname=HOSTNAME] [cert=CERTFILE key=KEYFILE]`
 * Blank lines allowed, start with '#' for a comment line.
 * `LOCAL` is either an IP address, an 'IP:PORT' value, a CIDR, or '*' to mean
   it matches everything (use only as the last line!). It controls what
   incoming connections are used.
 * The `hostname=` is equivalent to the `-helo` setting on the command line.
-* `cert=` and `key=` are equivalent to the `-c` and `-k` command line flags,
+* `cert=` and `key=` are equivalent to the `-C` and `-K` command line flags,
   and set the files for the TLS certificate and key (the parameters can be in
   any order). The CERTFILE and KEYFILE can take multiple certificates and keys
   separated by commas, like: `cert=c1.crt,c2.crt key=k1.key,k2.key`.
@@ -183,9 +180,9 @@ file is 1 or more: `LOCAL [hostname=HOSTNAME] [cert=CERTFILE key=KEYFILE]`
   for the connection. Any '*' line should thus be at the end of the file.
 * The command line arguments are used as the fallback if there are no matching
   lines. If there is a matching line and it does not specify TLS certificates,
-  this overrides the command line `-c`/`-k` settings so that this particular
+  this overrides the command line `-C`/`-K` settings so that this particular
   connection will not advertise TLS.
-* The `-conncfg` file is reloaded on every new connection. Errors in the file
+* The `-c` configfile is reloaded on every new connection. Errors in the file
   are currently not fatal; they cause things to fall back to the command line
   arguments (if any) and the defaults beyond them.
 
@@ -353,7 +350,7 @@ described later.
   against the hostname pattern HPAT. The hostname is obtained (and verified)
   through DNS. An IP can have multiple valid hostnames; if it does, the HPAT
   is checked against each of them and 'host' succeeds if any match.
-* `source HPAT`	is equivalent to `(host HPAT or ehlo HPAT or from @HPAT)`.
+* `source HPAT` is equivalent to `(host HPAT or ehlo HPAT or from @HPAT)`.
   It matches if the verified hostname is HPAT, if the client's EHLO/HELO gave
   that name, or if the MAIL FROM domain matches HPAT.
 * `ip IP|CIDR|FILENAME` matches the remote IP against the given IP address or
@@ -363,7 +360,7 @@ described later.
   any IP address).
 * `dbl SRCS DOMAIN` is true if the domain from at least one of the SRCS is
   listed in the given domain name DNS blocklist (with any IP address). SRCS
-  are comma-separated; valid ones are `host`,	`helo`/`ehlo`, `from`, and `any`
+  are comma-separated; valid ones are `host`, `helo`/`ehlo`, `from`, and `any`
   (for any of the previous). For `host`, all available DNS names are checked,
   whether or not they passed validation.
 * ` tls on|off` matches if TLS is on or off respectively on the connection.
