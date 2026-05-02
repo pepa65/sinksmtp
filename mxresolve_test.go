@@ -1,12 +1,8 @@
-//
 // Do very crude tests of ValidDomain().
-//
 
 package main
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestBasicResults(t *testing.T) {
 	// Has MX entry

@@ -1,6 +1,5 @@
-//
-// Lexer for control rules.
-// See rules.go.
+// Lexer for Control Rules.
+// See `DOC.md`
 //
 // The structure of this lexer is cribbed wholesale from Rob Pike's
 // lexer for templates in text/template/parse/lex.go (and in a slide

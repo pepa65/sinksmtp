@@ -1,4 +1,3 @@
-//
 // Support different configurations, currently SSL keys and greeting banners,
 // for incoming connections to different destinations.
 

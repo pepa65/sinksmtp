@@ -1,7 +1,6 @@
-//
-package main
-
 // Do proper reverse DNS lookups of IP addresses.
+
+package main
 
 import (
 	"net"

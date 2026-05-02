@@ -1,4 +1,3 @@
-//
 // Determine if a domain name is a valid mail domain.
 // This is not in the smtpd package because right now we have to do
 // crazy things to determine temporary DNS failures from permanent ones.

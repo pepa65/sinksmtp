@@ -1,5 +1,4 @@
-// For sinksmtp usage and other documentation, see doc.go
-// godoc . will show it.
+// For sinksmtp usage and other documentation, see DOC.md
 
 package main
 
@@ -407,7 +406,7 @@ type smtpTransaction struct {
 	hash     string    // canonical hash of the data, currently SHA1
 	bodyhash string    // canonical hash of the message body (no headers)
 	when     time.Time // when the email message data was received.
-	savedir  string // directory to save message to
+	savedir  string    // directory to save message to
 	filename string
 	// Reflects the current state, so tlson false can convert to
 	// tlson true over time. cipher is valid only if tlson is true.

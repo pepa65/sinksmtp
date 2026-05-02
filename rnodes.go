@@ -1,8 +1,6 @@
-//
+// Rule nodes and rule evaluation and so on.
 
 package main
-
-// Rule nodes and rule evaluation and so on.
 
 import (
 	"fmt"
@@ -183,7 +181,6 @@ func (rc *RClause) String() string {
 
 // String() returns the string form of a Rule. This is theoretically
 // a parseable version of the canonical form of the rule.
-//
 func (r *Rule) String() string {
 	var cstrs []string
 	for _, rc := range r.clauses {

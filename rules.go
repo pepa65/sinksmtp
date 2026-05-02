@@ -1,7 +1,4 @@
-//
-// Core of implementing command processing rules.
-// See doc.go in this directory for the documentation on what they are.
-//
+// Command processing rules, see DOC.md in this directory for documentation.
 
 package main
 
@@ -22,8 +19,7 @@ type DNSResult struct {
 // Context is the context for all rule evaluation. All expressions take
 // a context structure and operate on the data found in it.
 type Context struct {
-	// all fields in trans are read-only. we access trans.tlson
-	// and trans.rdns
+	// all fields in trans are read-only. we access trans.tlson and trans.rdns
 	trans *smtpTransaction
 
 	// these are shadow copies because we evaluate rules *before*
@@ -152,7 +148,6 @@ func (c *Context) getMatchList(a string) []string {
 	return c.files[fname]
 }
 
-//
 // Turn context information into Options
 func dnsGetter(c *Context) (o Option) {
 	if len(c.trans.rdns.verified) == 0 {
@@ -284,7 +279,7 @@ func getAddrOpts(a string, c *Context) (o Option) {
 // -----
 
 // Iterate through a string of the form 'a.b.c', returning '.b.c', '.c',
-// and then ''.
+// and then ”.
 type sDotIter struct {
 	s string
 	p int // points to the dot.
@@ -408,7 +403,6 @@ func ruleForEachRcpt(r *Rule, c *Context) Result {
 	return false
 }
 
-//
 // Decide what to do in a given phase in a context, with evt being
 // the event for the phase (we pull the command argument and the
 // command out of it).

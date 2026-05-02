@@ -1,4 +1,3 @@
-//
 // Right now this merely tests some support functions in rules.go and
 // does not attempt to test the main Decide() function. That one is
 // complicated, especially if we want to test the full logic; we'd
@@ -11,7 +10,6 @@ import (
 	"testing"
 )
 
-//
 // Test address and host matches, since so much depends on them.
 var aMatches = []struct {
 	a, pat string

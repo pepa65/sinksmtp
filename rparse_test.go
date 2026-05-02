@@ -1,7 +1,5 @@
-//
-// Test parsing and some evaluating
-// TODO: more tests
-//
+// Test parsing and some evaluating.
+
 package main
 
 import (

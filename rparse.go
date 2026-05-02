@@ -1,10 +1,9 @@
-//
 // Parse control rules using a standard hand written recursive descent
 // parser.
 //
-// our grammar (not fully formal):
-// a file is a sequence of rules; each rule ends at end of line
-// or 'include FILENAME EOL'
+// Grammar (not fully formal):
+// * A file is a sequence of rules
+// * Each rule ends at end of line or 'include FILENAME EOL'
 //
 // rule    -> [phase] what andl [with] EOL|EOF
 // rclause -> andl [with] [rend rclause]

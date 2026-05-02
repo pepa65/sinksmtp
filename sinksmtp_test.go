@@ -1,4 +1,3 @@
-//
 // Basic testing for file loading, which is stuck in sinksmtp.go for
 // reasons that are partly historical.
 

@@ -1,6 +1,4 @@
-//
-// Flail around testing the rules lexer.
-// This cannot be described as comprehensive.
+// Flail around testing the rules lexer (not comprehensive).
 
 package main
 
@@ -57,7 +55,6 @@ func TestLexing(t *testing.T) {
 	}
 }
 
-//
 // Specific lexing results tests
 type lexTest struct {
 	name  string // description of the test
