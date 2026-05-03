@@ -26,7 +26,7 @@ import (
 	"github.com/pepa65/smtpd"
 )
 
-const version = "0.3.1"
+const version = "0.3.2"
 const self = "sinksmtp"
 var stats = expvar.NewMap(self)
 var times expvar.Map
@@ -614,7 +614,7 @@ func logMessage(prefix string, trans *smtpTransaction, logf io.Writer) {
 	if trans.filename != "" {
 		fmt.Fprintf(writer, " into: %s", trans.filename)
 	}
-	fmt.Println("")
+	fmt.Printf(writer, "\n")
 	writer.Flush()
 	logf.Write(outbuf.Bytes())
 }
