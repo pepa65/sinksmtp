@@ -26,7 +26,7 @@ import (
 	"github.com/pepa65/smtpd"
 )
 
-const version = "0.3.0"
+const version = "0.3.1"
 const self = "sinksmtp"
 var stats = expvar.NewMap(self)
 var times expvar.Map
@@ -816,9 +816,7 @@ func decider(ph Phase, evt smtpd.EventInfo, c *Context, convo *smtpd.Conn, id st
 	msg := c.withprops["message"]
 	switch res {
 	case aReject:
-		// This is kind of a hack.
-		// We assume that 'id' is only set when we should report it,
-		// which is kind of safe.
+		// Assumed that 'id' is only set when it should be reported
 		if msg != "" {
 			if id != "" {
 				msg += "\nRejected with ID " + id
@@ -829,11 +827,11 @@ func decider(ph Phase, evt smtpd.EventInfo, c *Context, convo *smtpd.Conn, id st
 		// Default messages are kind of intricate.
 		switch {
 		case id != "" && ph == pMessage:
-			convo.RejectMsg("Barred from emailing %s\nRejected with ID %s", pluralRecips(c), id)
+			convo.RejectMsg("Mailbox blocked: %s\nRejected with ID %s", pluralRecips(c), id)
 		case ph == pMessage || ph == pData:
-			convo.RejectMsg("Barred from emailing %s", pluralRecips(c))
+			convo.RejectMsg("Mailbox blocked: %s", pluralRecips(c))
 		case ph == pRto:
-			convo.RejectMsg("Barred from emailing that address")
+			convo.RejectMsg("Mailbox unavailable")
 		default:
 			convo.Reject()
 		}

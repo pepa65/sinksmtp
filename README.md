@@ -1,4 +1,4 @@
-# sinksmtp 0.3.0
+# sinksmtp 0.3.1
 
 * Repo: github.com/pepa65/sinksmtp
 * License: GPLv3
