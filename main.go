@@ -26,7 +26,7 @@ import (
 	"github.com/pepa65/smtpd"
 )
 
-const version = "0.3.2"
+const version = "0.3.3"
 const self = "sinksmtp"
 var stats = expvar.NewMap(self)
 var times expvar.Map
