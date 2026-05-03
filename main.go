@@ -614,7 +614,7 @@ func logMessage(prefix string, trans *smtpTransaction, logf io.Writer) {
 	if trans.filename != "" {
 		fmt.Fprintf(writer, " into: %s", trans.filename)
 	}
-	fmt.Printf(writer, "\n")
+	fmt.Fprintf(writer, "\n")
 	writer.Flush()
 	logf.Write(outbuf.Bytes())
 }
